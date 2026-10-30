@@ -2,7 +2,7 @@
 
 <p align="center">
   <img
-    src="gemini-svg(5).svg"
+    src="gemini-svg (5).svg"
     alt="AI-Observable Logo"
     width="700"
   />
