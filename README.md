@@ -1,3 +1,4 @@
+# AI-Observable
 <p align="center">
   <img
     src="gemini-svg (5).svg"
@@ -5,7 +6,7 @@
     width="700"
   />
 </p>
-# AI-Observable
+
 
 Monitor and track costs, efficiency and other metrics for all your AI/LLM API
 usage in one place from your own computer. AI-Observable runs a local proxy in
