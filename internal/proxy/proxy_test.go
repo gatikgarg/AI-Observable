@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -32,17 +33,37 @@ func (f fakeResolver) Target(ctx context.Context, name string) (Target, error) {
 // upstream records the last request and replies with body/headers.
 type upstream struct {
 	*httptest.Server
+	mu         sync.Mutex
 	lastBody   []byte
 	lastHeader http.Header
 	lastQuery  string
 }
 
+type upstreamRequest struct {
+	body   []byte
+	header http.Header
+	query  string
+}
+
+func (u *upstream) request() upstreamRequest {
+	u.mu.Lock()
+	defer u.mu.Unlock()
+	return upstreamRequest{
+		body:   append([]byte(nil), u.lastBody...),
+		header: u.lastHeader.Clone(),
+		query:  u.lastQuery,
+	}
+}
+
 func newUpstream(t *testing.T, contentType, body string) *upstream {
 	u := &upstream{}
 	u.Server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		u.lastBody, _ = io.ReadAll(r.Body)
+		requestBody, _ := io.ReadAll(r.Body)
+		u.mu.Lock()
+		u.lastBody = requestBody
 		u.lastHeader = r.Header.Clone()
 		u.lastQuery = r.URL.RawQuery
+		u.mu.Unlock()
 		w.Header().Set("Content-Type", contentType)
 		w.Header().Set("X-Upstream", "1")
 		w.WriteHeader(200)
@@ -113,16 +134,17 @@ func TestBytesAreTransparent(t *testing.T) {
 	if rec.Code != 200 || rec.Body.String() != reply {
 		t.Fatalf("response not byte-identical: %d %q", rec.Code, rec.Body.String())
 	}
-	if string(up.lastBody) != payload {
-		t.Fatalf("upstream body changed: %q", up.lastBody)
+	request := up.request()
+	if string(request.body) != payload {
+		t.Fatalf("upstream body changed: %q", request.body)
 	}
-	if up.lastHeader.Get("Authorization") != "Bearer client-key" {
-		t.Fatalf("client mode must pass the client key through, got %q", up.lastHeader.Get("Authorization"))
+	if request.header.Get("Authorization") != "Bearer client-key" {
+		t.Fatalf("client mode must pass the client key through, got %q", request.header.Get("Authorization"))
 	}
-	if up.lastHeader.Get("X-Custom") != "keep" {
+	if request.header.Get("X-Custom") != "keep" {
 		t.Fatal("custom header was dropped")
 	}
-	if up.lastHeader.Get("X-Llmtap-Session") != "" {
+	if request.header.Get("X-Llmtap-Session") != "" {
 		t.Fatal("private headers must never reach the upstream")
 	}
 }
@@ -135,7 +157,7 @@ func TestManagedModeInjectsStoredKeyAndHidesClientKey(t *testing.T) {
 		map[string]string{"Authorization": "Bearer placeholder"}); rec.Code != 200 {
 		t.Fatalf("status %d", rec.Code)
 	}
-	if got := up.lastHeader.Get("Authorization"); got != "Bearer sk-stored" {
+	if got := up.request().header.Get("Authorization"); got != "Bearer sk-stored" {
 		t.Fatalf("managed mode injected %q", got)
 	}
 }
@@ -157,14 +179,15 @@ func TestAuthStyles(t *testing.T) {
 			h, _ := testHandler(t, Target{Name: "p", Kind: "local", Upstream: up.URL,
 				AuthStyle: c.style, AuthMode: "managed", Secret: "s3cret"})
 			do(t, h, "GET", "/p/v1/models?limit=2", "", map[string]string{"Authorization": "Bearer client"})
-			if got := up.lastHeader.Get(c.header); c.header != "" && got != c.want {
+			request := up.request()
+			if got := request.header.Get(c.header); c.header != "" && got != c.want {
 				t.Fatalf("%s = %q, want %q", c.header, got, c.want)
 			}
-			if c.style == "query-key" && !strings.Contains(up.lastQuery, c.wantQuery) {
-				t.Fatalf("query %q missing %q", up.lastQuery, c.wantQuery)
+			if c.style == "query-key" && !strings.Contains(request.query, c.wantQuery) {
+				t.Fatalf("query %q missing %q", request.query, c.wantQuery)
 			}
-			if c.style == "query-key" && !strings.Contains(up.lastQuery, "limit=2") {
-				t.Fatalf("existing query dropped: %q", up.lastQuery)
+			if c.style == "query-key" && !strings.Contains(request.query, "limit=2") {
+				t.Fatalf("existing query dropped: %q", request.query)
 			}
 		})
 	}
@@ -179,16 +202,16 @@ func TestStreamUsageInjectionIsChatCompletionsOnly(t *testing.T) {
 	if rec.Code != 200 {
 		t.Fatalf("status %d", rec.Code)
 	}
-	if !strings.Contains(string(up.lastBody), `"stream_options":{"include_usage":true}`) {
-		t.Fatalf("stream_options not injected: %s", up.lastBody)
+	if request := up.request(); !strings.Contains(string(request.body), `"stream_options":{"include_usage":true}`) {
+		t.Fatalf("stream_options not injected: %s", request.body)
 	}
 	if rec.Body.String() != sse {
 		t.Fatalf("stream bytes changed: %q", rec.Body.String())
 	}
 	// The same flag on a non-chat path must not touch the body.
 	do(t, h, "POST", "/openai/v1/messages", `{"model":"claude","stream":true}`, nil)
-	if strings.Contains(string(up.lastBody), "stream_options") {
-		t.Fatalf("stream_options leaked into a non-chat endpoint: %s", up.lastBody)
+	if request := up.request(); strings.Contains(string(request.body), "stream_options") {
+		t.Fatalf("stream_options leaked into a non-chat endpoint: %s", request.body)
 	}
 	waitRows(t, s)
 }

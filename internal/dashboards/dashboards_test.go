@@ -69,13 +69,13 @@ func TestGrafanaFilesAreFrozen(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	compose := filepath.Join(root, "deploy", "docker-compose.yml")
+	compose := filepath.Join(root, "compose.yaml")
 	b, err := os.ReadFile(compose)
 	if err != nil {
 		t.Fatal(err)
 	}
 	sum := sha256.Sum256(b)
-	got["deploy/docker-compose.yml"] = hex.EncodeToString(sum[:])
+	got["compose.yaml"] = hex.EncodeToString(sum[:])
 	if fmt.Sprint(got) != fmt.Sprint(want) {
 		keys := make([]string, 0, len(got)+len(want))
 		for k, v := range got {

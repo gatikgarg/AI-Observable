@@ -20,3 +20,9 @@ jobs:
       - run: go test -race ./...
       - run: go build ./...
       - run: go run ./cmd/verifydash
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose config -q
+      - run: docker build --tag ai-observable:ci .

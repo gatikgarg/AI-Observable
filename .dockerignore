@@ -1,0 +1,15 @@
+.git
+.github
+.tools
+.cache
+.local
+.smoke
+backups
+llmtap
+llmtap.exe
+*.db
+*.db-wal
+*.db-shm
+coverage.out
+go.zip
+go-installer.msi

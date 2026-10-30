@@ -65,6 +65,15 @@ func openVault(mode string) *vault.Vault {
 	return &vault.Vault{}
 }
 
+func resolveDataDir() (string, error) {
+	abs, err := filepath.Abs(dataDir)
+	if err != nil {
+		return "", fmt.Errorf("resolve data directory: %w", err)
+	}
+	dataDir = abs
+	return dataDir, nil
+}
+
 func vaultState(v *vault.Vault) string {
 	if v == nil || !v.Available() {
 		return "locked"
@@ -74,8 +83,12 @@ func vaultState(v *vault.Vault) string {
 
 func start() *cobra.Command {
 	var pp, ap string
+	var forwardProxy, forwardAdmin string
 	var remote bool
 	cmd := &cobra.Command{Use: "start", RunE: func(c *cobra.Command, a []string) error {
+		if _, e := resolveDataDir(); e != nil {
+			return e
+		}
 		cfg, e := config.Load(dataDir)
 		if e != nil {
 			return e
@@ -93,11 +106,11 @@ func start() *cobra.Command {
 		if e != nil {
 			return e
 		}
+		defer s.Close()
 		// The control DB is the source of truth for providers and keys; the
 		// vault decrypts them. Both are optional for a minimal start.
 		db, e := control.Open(filepath.Join(dataDir, "control.db"))
 		if e != nil {
-			s.Close()
 			return e
 		}
 		defer db.Close()
@@ -106,6 +119,44 @@ func start() *cobra.Command {
 		// keeps working without the wizard; rows already in control.db win.
 		if _, e := db.ImportFromConfig(context.Background(), cfg.Providers); e != nil {
 			fmt.Fprintln(os.Stderr, "import config.toml:", e)
+		}
+		// Bind both ports before launching background work so a busy port is
+		// reported without collectors, snapshots, or retention touching the DB.
+		proxyLn, e := net.Listen("tcp", cfg.Server.ProxyAddr)
+		if e != nil {
+			return fmt.Errorf("proxy listen %s: %w", cfg.Server.ProxyAddr, e)
+		}
+		adminLn, e := net.Listen("tcp", cfg.Server.AdminAddr)
+		if e != nil {
+			proxyLn.Close()
+			return fmt.Errorf("admin listen %s: %w", cfg.Server.AdminAddr, e)
+		}
+		forwarders := make([]*tcpForwarder, 0, 2)
+		defer func() {
+			for _, forwarder := range forwarders {
+				forwarder.Close()
+			}
+		}()
+		addForwarder := func(name, listen, target string) error {
+			if listen == "" {
+				return nil
+			}
+			forwarder, err := newTCPForwarder(name, listen, target)
+			if err != nil {
+				return err
+			}
+			forwarders = append(forwarders, forwarder)
+			return nil
+		}
+		if e := addForwarder("proxy-forward", forwardProxy, cfg.Server.ProxyAddr); e != nil {
+			proxyLn.Close()
+			adminLn.Close()
+			return e
+		}
+		if e := addForwarder("admin-forward", forwardAdmin, cfg.Server.AdminAddr); e != nil {
+			proxyLn.Close()
+			adminLn.Close()
+			return e
 		}
 		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer stop()
@@ -146,22 +197,13 @@ func start() *cobra.Command {
 			ReadHeaderTimeout: 10 * time.Second,
 		}
 		adminSrv := &http.Server{Handler: mgr, ReadHeaderTimeout: 10 * time.Second}
-		// Bind before serving so a busy port is a start-up failure, not a
-		// process that prints two URLs and answers nothing.
-		proxyLn, e := net.Listen("tcp", cfg.Server.ProxyAddr)
-		if e != nil {
-			s.Close()
-			return fmt.Errorf("proxy listen %s: %w", cfg.Server.ProxyAddr, e)
-		}
-		adminLn, e := net.Listen("tcp", cfg.Server.AdminAddr)
-		if e != nil {
-			proxyLn.Close()
-			s.Close()
-			return fmt.Errorf("admin listen %s: %w", cfg.Server.AdminAddr, e)
-		}
-		errCh := make(chan error, 2)
+		errCh := make(chan error, 2+len(forwarders))
 		go func() { errCh <- serveNamed(proxySrv, proxyLn, "proxy") }()
 		go func() { errCh <- serveNamed(adminSrv, adminLn, "admin") }()
+		for _, forwarder := range forwarders {
+			f := forwarder
+			go func() { errCh <- f.Serve(ctx) }()
+		}
 
 		proxyURL := "http://" + cfg.Server.ProxyAddr
 		adminURL := "http://" + cfg.Server.AdminAddr
@@ -180,16 +222,20 @@ func start() *cobra.Command {
 		}
 		shutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
+		for _, forwarder := range forwarders {
+			forwarder.Close()
+		}
 		proxySrv.Shutdown(shutCtx)
 		adminSrv.Shutdown(shutCtx)
 		if e := snap.Take(); e != nil {
 			fmt.Fprintln(os.Stderr, "snapshot:", e)
 		}
-		s.Close()
 		return runErr
 	}}
 	cmd.Flags().StringVar(&pp, "proxy-port", "", "proxy port")
 	cmd.Flags().StringVar(&ap, "admin-port", "", "admin port")
+	cmd.Flags().StringVar(&forwardProxy, "forward-proxy", "", "listen address for forwarded proxy traffic")
+	cmd.Flags().StringVar(&forwardAdmin, "forward-admin", "", "listen address for forwarded admin traffic")
 	cmd.Flags().BoolVar(&remote, "allow-remote", false, "allow non-loopback binds")
 	return cmd
 }
@@ -274,6 +320,9 @@ func openBrowser(url string) {
 
 func status() *cobra.Command {
 	return &cobra.Command{Use: "status", RunE: func(c *cobra.Command, a []string) error {
+		if _, e := resolveDataDir(); e != nil {
+			return e
+		}
 		s, e := store.Open(dataDir)
 		if e != nil {
 			return e

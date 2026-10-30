@@ -2,8 +2,10 @@ package main
 
 import (
 	"net"
+	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func TestBusyProxyPortIsAStartupFailure(t *testing.T) {
@@ -14,7 +16,7 @@ func TestBusyProxyPortIsAStartupFailure(t *testing.T) {
 	defer ln.Close()
 	port := ln.Addr().(*net.TCPAddr).Port
 	old := dataDir
-	dataDir = filepath.Join(t.TempDir(), "data")
+	dataDir = filepath.Join(testTempDir(t), "data")
 	defer func() { dataDir = old }()
 
 	startCmd := start()
@@ -22,6 +24,29 @@ func TestBusyProxyPortIsAStartupFailure(t *testing.T) {
 	if err := startCmd.Execute(); err == nil {
 		t.Fatal("start succeeded while the proxy port was occupied")
 	}
+}
+
+func testTempDir(t *testing.T) string {
+	t.Helper()
+	dir, err := os.MkdirTemp("", "llmtap-main-test-*")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		deadline := time.Now().Add(5 * time.Second)
+		for {
+			err := os.RemoveAll(dir)
+			if err == nil {
+				return
+			}
+			if time.Now().After(deadline) {
+				t.Errorf("remove test temp directory: %v", err)
+				return
+			}
+			time.Sleep(50 * time.Millisecond)
+		}
+	})
+	return dir
 }
 
 func itoa(n int) string {

@@ -6,4 +6,4 @@ datasources:
     access: proxy
     isDefault: true
     jsonData:
-      path: /var/lib/llmtap/llmtap_view.db
+      path: /var/lib/llmtap/view/llmtap_view.db
