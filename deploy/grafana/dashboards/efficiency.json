@@ -1,0 +1,619 @@
+{
+  "editable": false,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "title": "Cost",
+      "url": "/d/llmtap-cost"
+    },
+    {
+      "title": "Reliability",
+      "url": "/d/llmtap-reliability"
+    },
+    {
+      "title": "Latency",
+      "url": "/d/llmtap-latency"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Total prompt tokens including cached tokens in the selected range.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": null,
+      "noValue": "No token usage in this time range.",
+      "options": {
+        "colorMode": "value_and_background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "SELECT COALESCE(SUM(input_tokens),0) AS input_tokens FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryText": "SELECT COALESCE(SUM(input_tokens),0) AS input_tokens FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryType": "table",
+          "rawQueryText": "SELECT COALESCE(SUM(input_tokens),0) AS input_tokens FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Input Tokens",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Total generated output tokens in the selected range.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": null,
+      "noValue": "No token usage in this time range.",
+      "options": {
+        "colorMode": "value_and_background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "SELECT COALESCE(SUM(output_tokens),0) AS output_tokens FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryText": "SELECT COALESCE(SUM(output_tokens),0) AS output_tokens FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryType": "table",
+          "rawQueryText": "SELECT COALESCE(SUM(output_tokens),0) AS output_tokens FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Output Tokens",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Cached input tokens reported by providers. NULL means cache usage was not reported; zero means it was reported absent.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": null,
+      "noValue": "Not reported by this provider.",
+      "options": {
+        "colorMode": "value_and_background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "SELECT SUM(cache_read_tokens) AS cached_tokens FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryText": "SELECT SUM(cache_read_tokens) AS cached_tokens FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryType": "table",
+          "rawQueryText": "SELECT SUM(cache_read_tokens) AS cached_tokens FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Cached Tokens",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Distinct provider/model labels observed in the selected range.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": null,
+      "noValue": "No calls in this time range.",
+      "options": {
+        "colorMode": "value_and_background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "SELECT COUNT(DISTINCT provider||'/'||model) AS models FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryText": "SELECT COUNT(DISTINCT provider||'/'||model) AS models FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryType": "table",
+          "rawQueryText": "SELECT COUNT(DISTINCT provider||'/'||model) AS models FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Unique Models",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Uncached input, output and cached input per adaptive bucket; cache series depends on provider reporting.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "id": null,
+      "noValue": "No token usage in this time range.",
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "query": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,SUM(COALESCE(input_tokens,0)-COALESCE(cache_read_tokens,0)) AS input_uncached,SUM(COALESCE(output_tokens,0)) AS output,SUM(COALESCE(cache_read_tokens,0)) AS cached_input FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY 1",
+          "queryText": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,SUM(COALESCE(input_tokens,0)-COALESCE(cache_read_tokens,0)) AS input_uncached,SUM(COALESCE(output_tokens,0)) AS output,SUM(COALESCE(cache_read_tokens,0)) AS cached_input FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY 1",
+          "queryType": "table",
+          "rawQueryText": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,SUM(COALESCE(input_tokens,0)-COALESCE(cache_read_tokens,0)) AS input_uncached,SUM(COALESCE(output_tokens,0)) AS output,SUM(COALESCE(cache_read_tokens,0)) AS cached_input FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY 1",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Token Consumption Over Time",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Observed attempts by provider/model, selected-range only.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "id": null,
+      "noValue": "No calls in this time range.",
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none"
+      },
+      "targets": [
+        {
+          "query": "SELECT provider||'/'||model AS model,COUNT(*) AS requests FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY requests DESC LIMIT 15",
+          "queryText": "SELECT provider||'/'||model AS model,COUNT(*) AS requests FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY requests DESC LIMIT 15",
+          "queryType": "table",
+          "rawQueryText": "SELECT provider||'/'||model AS model,COUNT(*) AS requests FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY requests DESC LIMIT 15",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Request Mix by Model",
+      "transparent": false,
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Average input/output tokens per observed call per adaptive bucket; rows missing either usage value are excluded.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "id": null,
+      "noValue": "No complete token usage in this time range.",
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "query": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,AVG(input_tokens) AS avg_input,AVG(output_tokens) AS avg_output FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND input_tokens IS NOT NULL AND output_tokens IS NOT NULL GROUP BY 1 ORDER BY 1",
+          "queryText": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,AVG(input_tokens) AS avg_input,AVG(output_tokens) AS avg_output FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND input_tokens IS NOT NULL AND output_tokens IS NOT NULL GROUP BY 1 ORDER BY 1",
+          "queryType": "table",
+          "rawQueryText": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,AVG(input_tokens) AS avg_input,AVG(output_tokens) AS avg_output FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND input_tokens IS NOT NULL AND output_tokens IS NOT NULL GROUP BY 1 ORDER BY 1",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Average Tokens per Call",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Cached/eligible input percentage and cached-token volume per adaptive bucket; eligible means input_tokens and non-NULL cache reporting.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "id": null,
+      "noValue": "Not reported by this provider.",
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "query": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,100.0*SUM(cache_read_tokens)/NULLIF(SUM(input_tokens),0) AS cache_hit_pct,SUM(cache_read_tokens) AS cached_tokens FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND cache_read_tokens IS NOT NULL AND input_tokens IS NOT NULL GROUP BY 1 ORDER BY 1",
+          "queryText": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,100.0*SUM(cache_read_tokens)/NULLIF(SUM(input_tokens),0) AS cache_hit_pct,SUM(cache_read_tokens) AS cached_tokens FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND cache_read_tokens IS NOT NULL AND input_tokens IS NOT NULL GROUP BY 1 ORDER BY 1",
+          "queryType": "table",
+          "rawQueryText": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,100.0*SUM(cache_read_tokens)/NULLIF(SUM(input_tokens),0) AS cache_hit_pct,SUM(cache_read_tokens) AS cached_tokens FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND cache_read_tokens IS NOT NULL AND input_tokens IS NOT NULL GROUP BY 1 ORDER BY 1",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Cache Utilization",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "One point per priced model: X is average cost per priced call, Y is p95 successful latency. No composite best-model score is calculated.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "id": null,
+      "noValue": "No priced successful models in this time range.",
+      "options": {
+        "legend": {
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "query": "WITH s AS (SELECT provider||'/'||model AS m,latency_ms,cost_usd,success FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000),r AS (SELECT m,latency_ms,ROW_NUMBER() OVER(PARTITION BY m ORDER BY latency_ms) rn,COUNT(*) OVER(PARTITION BY m) cnt FROM s WHERE success=1),p AS (SELECT m,MAX(CASE WHEN rn=(cnt*95+99)/100 THEN latency_ms END) AS p95_ms FROM r GROUP BY m),c AS (SELECT m,COUNT(*) AS calls,SUM(cost_usd)/NULLIF(COUNT(cost_usd),0) AS cost_per_call FROM s GROUP BY m) SELECT c.m AS model,c.cost_per_call,p.p95_ms,c.calls FROM c JOIN p USING(m) WHERE c.cost_per_call IS NOT NULL",
+          "queryText": "WITH s AS (SELECT provider||'/'||model AS m,latency_ms,cost_usd,success FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000),r AS (SELECT m,latency_ms,ROW_NUMBER() OVER(PARTITION BY m ORDER BY latency_ms) rn,COUNT(*) OVER(PARTITION BY m) cnt FROM s WHERE success=1),p AS (SELECT m,MAX(CASE WHEN rn=(cnt*95+99)/100 THEN latency_ms END) AS p95_ms FROM r GROUP BY m),c AS (SELECT m,COUNT(*) AS calls,SUM(cost_usd)/NULLIF(COUNT(cost_usd),0) AS cost_per_call FROM s GROUP BY m) SELECT c.m AS model,c.cost_per_call,p.p95_ms,c.calls FROM c JOIN p USING(m) WHERE c.cost_per_call IS NOT NULL",
+          "queryType": "table",
+          "rawQueryText": "WITH s AS (SELECT provider||'/'||model AS m,latency_ms,cost_usd,success FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000),r AS (SELECT m,latency_ms,ROW_NUMBER() OVER(PARTITION BY m ORDER BY latency_ms) rn,COUNT(*) OVER(PARTITION BY m) cnt FROM s WHERE success=1),p AS (SELECT m,MAX(CASE WHEN rn=(cnt*95+99)/100 THEN latency_ms END) AS p95_ms FROM r GROUP BY m),c AS (SELECT m,COUNT(*) AS calls,SUM(cost_usd)/NULLIF(COUNT(cost_usd),0) AS cost_per_call FROM s GROUP BY m) SELECT c.m AS model,c.cost_per_call,p.p95_ms,c.calls FROM c JOIN p USING(m) WHERE c.cost_per_call IS NOT NULL",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Cost vs Latency by Model",
+      "transparent": false,
+      "type": "xychart"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Neutral sortable comparison of usage, cost, latency, reliability and cache ratio. No quality metric is collected; compare dimensions for your task and do not infer a single winner.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "id": null,
+      "noValue": "No model calls in this time range.",
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "query": "SELECT provider||'/'||model AS model,COUNT(*) AS requests,SUM(input_tokens) AS input_tokens,SUM(output_tokens) AS output_tokens,ROUND(SUM(cost_usd)/NULLIF(COUNT(cost_usd),0),6) AS cost_per_call,ROUND(100.0*SUM(success)/NULLIF(SUM(1-is_cancelled),0),1) AS success_pct,ROUND(100.0*SUM(cache_read_tokens)/NULLIF(SUM(CASE WHEN cache_read_tokens IS NOT NULL THEN input_tokens END),0),1) AS cache_ratio_pct,CASE WHEN COUNT(*)\u003c20 THEN 'low sample' ELSE '' END AS note FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY requests DESC LIMIT 25",
+          "queryText": "SELECT provider||'/'||model AS model,COUNT(*) AS requests,SUM(input_tokens) AS input_tokens,SUM(output_tokens) AS output_tokens,ROUND(SUM(cost_usd)/NULLIF(COUNT(cost_usd),0),6) AS cost_per_call,ROUND(100.0*SUM(success)/NULLIF(SUM(1-is_cancelled),0),1) AS success_pct,ROUND(100.0*SUM(cache_read_tokens)/NULLIF(SUM(CASE WHEN cache_read_tokens IS NOT NULL THEN input_tokens END),0),1) AS cache_ratio_pct,CASE WHEN COUNT(*)\u003c20 THEN 'low sample' ELSE '' END AS note FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY requests DESC LIMIT 25",
+          "queryType": "table",
+          "rawQueryText": "SELECT provider||'/'||model AS model,COUNT(*) AS requests,SUM(input_tokens) AS input_tokens,SUM(output_tokens) AS output_tokens,ROUND(SUM(cost_usd)/NULLIF(COUNT(cost_usd),0),6) AS cost_per_call,ROUND(100.0*SUM(success)/NULLIF(SUM(1-is_cancelled),0),1) AS success_pct,ROUND(100.0*SUM(cache_read_tokens)/NULLIF(SUM(CASE WHEN cache_read_tokens IS NOT NULL THEN input_tokens END),0),1) AS cache_ratio_pct,CASE WHEN COUNT(*)\u003c20 THEN 'low sample' ELSE '' END AS note FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY requests DESC LIMIT 25",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Model Efficiency Comparison",
+      "transparent": false,
+      "type": "table"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 41,
+  "tags": [
+    "ai-observable"
+  ],
+  "templating": {
+    "list": [
+      {
+        "datasource": {
+          "type": "frser-sqlite-datasource",
+          "uid": "llmtap-sqlite"
+        },
+        "definition": "SELECT DISTINCT model FROM calls_v ORDER BY model",
+        "includeAll": true,
+        "label": "Model",
+        "multi": true,
+        "name": "model",
+        "query": "SELECT DISTINCT model FROM calls_v ORDER BY model",
+        "refresh": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "quick_ranges": [
+      {
+        "display": "1h",
+        "from": "now-1h",
+        "to": "now"
+      },
+      {
+        "display": "6h",
+        "from": "now-6h",
+        "to": "now"
+      },
+      {
+        "display": "24h",
+        "from": "now-24h",
+        "to": "now"
+      },
+      {
+        "display": "7d",
+        "from": "now-7d",
+        "to": "now"
+      },
+      {
+        "display": "30d",
+        "from": "now-30d",
+        "to": "now"
+      }
+    ]
+  },
+  "title": "LLM Model Usage \u0026 Efficiency",
+  "uid": "llmtap-efficiency"
+}

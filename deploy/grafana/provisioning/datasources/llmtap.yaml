@@ -1,0 +1,9 @@
+apiVersion: 1
+datasources:
+  - name: AI-Observable SQLite
+    uid: llmtap-sqlite
+    type: frser-sqlite-datasource
+    access: proxy
+    isDefault: true
+    jsonData:
+      path: /var/lib/llmtap/llmtap_view.db

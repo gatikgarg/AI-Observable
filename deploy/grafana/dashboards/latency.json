@@ -1,0 +1,667 @@
+{
+  "editable": false,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "title": "Cost",
+      "url": "/d/llmtap-cost"
+    },
+    {
+      "title": "Reliability",
+      "url": "/d/llmtap-reliability"
+    },
+    {
+      "title": "Efficiency",
+      "url": "/d/llmtap-efficiency"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Nearest-rank p50 latency for successful, non-cancelled attempts only.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": null,
+      "noValue": "No successful calls in this time range.",
+      "options": {
+        "colorMode": "value_and_background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "WITH r AS (SELECT latency_ms,ROW_NUMBER() OVER(ORDER BY latency_ms) rn,COUNT(*) OVER() cnt FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0) SELECT latency_ms AS p50 FROM r WHERE rn=(cnt*50+99)/100 LIMIT 1",
+          "queryText": "WITH r AS (SELECT latency_ms,ROW_NUMBER() OVER(ORDER BY latency_ms) rn,COUNT(*) OVER() cnt FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0) SELECT latency_ms AS p50 FROM r WHERE rn=(cnt*50+99)/100 LIMIT 1",
+          "queryType": "table",
+          "rawQueryText": "WITH r AS (SELECT latency_ms,ROW_NUMBER() OVER(ORDER BY latency_ms) rn,COUNT(*) OVER() cnt FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0) SELECT latency_ms AS p50 FROM r WHERE rn=(cnt*50+99)/100 LIMIT 1",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "p50 Latency",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Nearest-rank p95 latency for successful, non-cancelled attempts only.",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 2000
+              },
+              {
+                "color": "red",
+                "value": 5000
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": null,
+      "noValue": "No successful calls in this time range.",
+      "options": {
+        "colorMode": "value_and_background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "WITH r AS (SELECT latency_ms,ROW_NUMBER() OVER(ORDER BY latency_ms) rn,COUNT(*) OVER() cnt FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0) SELECT latency_ms AS p95 FROM r WHERE rn=(cnt*95+99)/100 LIMIT 1",
+          "queryText": "WITH r AS (SELECT latency_ms,ROW_NUMBER() OVER(ORDER BY latency_ms) rn,COUNT(*) OVER() cnt FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0) SELECT latency_ms AS p95 FROM r WHERE rn=(cnt*95+99)/100 LIMIT 1",
+          "queryType": "table",
+          "rawQueryText": "WITH r AS (SELECT latency_ms,ROW_NUMBER() OVER(ORDER BY latency_ms) rn,COUNT(*) OVER() cnt FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0) SELECT latency_ms AS p95 FROM r WHERE rn=(cnt*95+99)/100 LIMIT 1",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "p95 Latency",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Nearest-rank p99 latency for successful, non-cancelled attempts only.",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 2000
+              },
+              {
+                "color": "red",
+                "value": 5000
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": null,
+      "noValue": "No successful calls in this time range.",
+      "options": {
+        "colorMode": "value_and_background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "WITH r AS (SELECT latency_ms,ROW_NUMBER() OVER(ORDER BY latency_ms) rn,COUNT(*) OVER() cnt FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0) SELECT latency_ms AS p99 FROM r WHERE rn=(cnt*99+99)/100 LIMIT 1",
+          "queryText": "WITH r AS (SELECT latency_ms,ROW_NUMBER() OVER(ORDER BY latency_ms) rn,COUNT(*) OVER() cnt FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0) SELECT latency_ms AS p99 FROM r WHERE rn=(cnt*99+99)/100 LIMIT 1",
+          "queryType": "table",
+          "rawQueryText": "WITH r AS (SELECT latency_ms,ROW_NUMBER() OVER(ORDER BY latency_ms) rn,COUNT(*) OVER() cnt FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0) SELECT latency_ms AS p99 FROM r WHERE rn=(cnt*99+99)/100 LIMIT 1",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "p99 Latency",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Nearest-rank p95 time to first byte for successful streamed attempts; meaningful content-delta TTFT requires SSE parser support.",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 2000
+              },
+              {
+                "color": "red",
+                "value": 5000
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": null,
+      "noValue": "No TTFT data in this time range.",
+      "options": {
+        "colorMode": "value_and_background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "WITH r AS (SELECT ttft_ms,ROW_NUMBER() OVER(ORDER BY ttft_ms) rn,COUNT(*) OVER() cnt FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0 AND ttft_ms IS NOT NULL) SELECT ttft_ms AS p95_ttft FROM r WHERE rn=(cnt*95+99)/100 LIMIT 1",
+          "queryText": "WITH r AS (SELECT ttft_ms,ROW_NUMBER() OVER(ORDER BY ttft_ms) rn,COUNT(*) OVER() cnt FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0 AND ttft_ms IS NOT NULL) SELECT ttft_ms AS p95_ttft FROM r WHERE rn=(cnt*95+99)/100 LIMIT 1",
+          "queryType": "table",
+          "rawQueryText": "WITH r AS (SELECT ttft_ms,ROW_NUMBER() OVER(ORDER BY ttft_ms) rn,COUNT(*) OVER() cnt FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0 AND ttft_ms IS NOT NULL) SELECT ttft_ms AS p95_ttft FROM r WHERE rn=(cnt*95+99)/100 LIMIT 1",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "p95 TTFT",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "p50, p95 and p99 nearest-rank latency per adaptive bucket, successful non-cancelled calls only.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "id": null,
+      "noValue": "No successful calls in this time range.",
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "query": "WITH b AS (SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,latency_ms,ROW_NUMBER() OVER(PARTITION BY CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER) ORDER BY latency_ms) rn,COUNT(*) OVER(PARTITION BY CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)) cnt FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0) SELECT time,MAX(CASE WHEN rn=(cnt*50+99)/100 THEN latency_ms END) AS p50,MAX(CASE WHEN rn=(cnt*95+99)/100 THEN latency_ms END) AS p95,MAX(CASE WHEN rn=(cnt*99+99)/100 THEN latency_ms END) AS p99 FROM b GROUP BY time ORDER BY time",
+          "queryText": "WITH b AS (SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,latency_ms,ROW_NUMBER() OVER(PARTITION BY CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER) ORDER BY latency_ms) rn,COUNT(*) OVER(PARTITION BY CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)) cnt FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0) SELECT time,MAX(CASE WHEN rn=(cnt*50+99)/100 THEN latency_ms END) AS p50,MAX(CASE WHEN rn=(cnt*95+99)/100 THEN latency_ms END) AS p95,MAX(CASE WHEN rn=(cnt*99+99)/100 THEN latency_ms END) AS p99 FROM b GROUP BY time ORDER BY time",
+          "queryType": "table",
+          "rawQueryText": "WITH b AS (SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,latency_ms,ROW_NUMBER() OVER(PARTITION BY CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER) ORDER BY latency_ms) rn,COUNT(*) OVER(PARTITION BY CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)) cnt FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0) SELECT time,MAX(CASE WHEN rn=(cnt*50+99)/100 THEN latency_ms END) AS p50,MAX(CASE WHEN rn=(cnt*95+99)/100 THEN latency_ms END) AS p95,MAX(CASE WHEN rn=(cnt*99+99)/100 THEN latency_ms END) AS p99 FROM b GROUP BY time ORDER BY time",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Latency Percentiles Over Time",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Average and p95 latency per adaptive bucket for the top models by observed call count; successful non-cancelled calls only.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "id": null,
+      "noValue": "No successful calls in this time range.",
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "query": "WITH top AS (SELECT provider||'/'||model AS m FROM calls_v WHERE ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY COUNT(*) DESC LIMIT 6) SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,provider||'/'||model AS model,AVG(latency_ms) AS avg_latency FROM calls_v WHERE ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0 AND provider||'/'||model IN (SELECT m FROM top) GROUP BY 1,2 ORDER BY 1",
+          "queryText": "WITH top AS (SELECT provider||'/'||model AS m FROM calls_v WHERE ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY COUNT(*) DESC LIMIT 6) SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,provider||'/'||model AS model,AVG(latency_ms) AS avg_latency FROM calls_v WHERE ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0 AND provider||'/'||model IN (SELECT m FROM top) GROUP BY 1,2 ORDER BY 1",
+          "queryType": "table",
+          "rawQueryText": "WITH top AS (SELECT provider||'/'||model AS m FROM calls_v WHERE ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY COUNT(*) DESC LIMIT 6) SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,provider||'/'||model AS model,AVG(latency_ms) AS avg_latency FROM calls_v WHERE ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0 AND provider||'/'||model IN (SELECT m FROM top) GROUP BY 1,2 ORDER BY 1",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Latency by Model",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Pre-bucketed successful latency distribution; the 5000-row source limit can truncate very large ranges.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "id": null,
+      "noValue": "No successful calls in this time range.",
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none"
+      },
+      "targets": [
+        {
+          "query": "SELECT printf('%d-%d ms',(latency_ms/250)*250,(latency_ms/250)*250+249) AS latency_bucket,COUNT(*) AS calls FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0 GROUP BY 1 ORDER BY 1 LIMIT 100",
+          "queryText": "SELECT printf('%d-%d ms',(latency_ms/250)*250,(latency_ms/250)*250+249) AS latency_bucket,COUNT(*) AS calls FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0 GROUP BY 1 ORDER BY 1 LIMIT 100",
+          "queryType": "table",
+          "rawQueryText": "SELECT printf('%d-%d ms',(latency_ms/250)*250,(latency_ms/250)*250+249) AS latency_bucket,COUNT(*) AS calls FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0 GROUP BY 1 ORDER BY 1 LIMIT 100",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Latency Distribution",
+      "transparent": false,
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Observed attempts per adaptive bucket divided by bucket seconds; this is not Prometheus rate data.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "id": null,
+      "noValue": "No calls in this time range.",
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "query": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,COUNT(*)/MAX(10,(($__to-$__from)/1000)/120) AS attempts_per_second FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY 1",
+          "queryText": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,COUNT(*)/MAX(10,(($__to-$__from)/1000)/120) AS attempts_per_second FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY 1",
+          "queryType": "table",
+          "rawQueryText": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,COUNT(*)/MAX(10,(($__to-$__from)/1000)/120) AS attempts_per_second FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY 1",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Throughput",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Slowest successful/non-cancelled attempts, limited to 50 rows; id links to the call record.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "id": null,
+      "noValue": "No slow calls in this time range.",
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "query": "SELECT id,datetime(ts,'unixepoch') AS time_utc,provider||'/'||model AS model,latency_ms,ttft_ms,status,trace_id FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0 ORDER BY latency_ms DESC LIMIT 50",
+          "queryText": "SELECT id,datetime(ts,'unixepoch') AS time_utc,provider||'/'||model AS model,latency_ms,ttft_ms,status,trace_id FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0 ORDER BY latency_ms DESC LIMIT 50",
+          "queryType": "table",
+          "rawQueryText": "SELECT id,datetime(ts,'unixepoch') AS time_utc,provider||'/'||model AS model,latency_ms,ttft_ms,status,trace_id FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND success=1 AND is_cancelled=0 ORDER BY latency_ms DESC LIMIT 50",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Slowest Calls",
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Slow failed attempts excluding cancellations; use error_category to identify the source.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "id": null,
+      "noValue": "No failed calls in this time range.",
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "query": "SELECT id,datetime(ts,'unixepoch') AS time_utc,provider||'/'||model AS model,latency_ms,ttft_ms,status,error_category,trace_id FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND is_failure=1 ORDER BY latency_ms DESC LIMIT 50",
+          "queryText": "SELECT id,datetime(ts,'unixepoch') AS time_utc,provider||'/'||model AS model,latency_ms,ttft_ms,status,error_category,trace_id FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND is_failure=1 ORDER BY latency_ms DESC LIMIT 50",
+          "queryType": "table",
+          "rawQueryText": "SELECT id,datetime(ts,'unixepoch') AS time_utc,provider||'/'||model AS model,latency_ms,ttft_ms,status,error_category,trace_id FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND is_failure=1 ORDER BY latency_ms DESC LIMIT 50",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Slow Failure Attempts",
+      "transparent": false,
+      "type": "table"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 41,
+  "tags": [
+    "ai-observable"
+  ],
+  "templating": {
+    "list": [
+      {
+        "datasource": {
+          "type": "frser-sqlite-datasource",
+          "uid": "llmtap-sqlite"
+        },
+        "definition": "SELECT DISTINCT model FROM calls_v ORDER BY model",
+        "includeAll": true,
+        "label": "Model",
+        "multi": true,
+        "name": "model",
+        "query": "SELECT DISTINCT model FROM calls_v ORDER BY model",
+        "refresh": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "quick_ranges": [
+      {
+        "display": "1h",
+        "from": "now-1h",
+        "to": "now"
+      },
+      {
+        "display": "6h",
+        "from": "now-6h",
+        "to": "now"
+      },
+      {
+        "display": "24h",
+        "from": "now-24h",
+        "to": "now"
+      },
+      {
+        "display": "7d",
+        "from": "now-7d",
+        "to": "now"
+      },
+      {
+        "display": "30d",
+        "from": "now-30d",
+        "to": "now"
+      }
+    ]
+  },
+  "title": "LLM Latency \u0026 Performance",
+  "uid": "llmtap-latency"
+}

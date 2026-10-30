@@ -1,0 +1,628 @@
+{
+  "editable": false,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "title": "Reliability",
+      "url": "/d/llmtap-reliability"
+    },
+    {
+      "title": "Latency",
+      "url": "/d/llmtap-latency"
+    },
+    {
+      "title": "Efficiency",
+      "url": "/d/llmtap-efficiency"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Total priced spend in the selected range; attempts are rows observed by the proxy.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 4,
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": null,
+      "noValue": "No calls in this time range. Widen the range or see the a wider time range or the Model filter.",
+      "options": {
+        "colorMode": "value_and_background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "SELECT COALESCE(SUM(cost_usd),0) AS spend FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryText": "SELECT COALESCE(SUM(cost_usd),0) AS spend FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryType": "table",
+          "rawQueryText": "SELECT COALESCE(SUM(cost_usd),0) AS spend FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Total Spend",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Average priced cost per observed attempt in the selected range; unpriced rows are excluded.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          },
+          "decimals": 4,
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": null,
+      "noValue": "No priced calls in this time range.",
+      "options": {
+        "colorMode": "value_and_background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "SELECT SUM(cost_usd)/NULLIF(COUNT(cost_usd),0) AS cost_per_call FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryText": "SELECT SUM(cost_usd)/NULLIF(COUNT(cost_usd),0) AS cost_per_call FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryType": "table",
+          "rawQueryText": "SELECT SUM(cost_usd)/NULLIF(COUNT(cost_usd),0) AS cost_per_call FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Average Cost / Call",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Calls with no matching model price; add a price override before interpreting spend.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": null,
+      "noValue": "No unpriced calls.",
+      "options": {
+        "colorMode": "value_and_background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "SELECT COUNT(*) AS unpriced FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND pricing_missing=1",
+          "queryText": "SELECT COUNT(*) AS unpriced FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND pricing_missing=1",
+          "queryType": "table",
+          "rawQueryText": "SELECT COUNT(*) AS unpriced FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND pricing_missing=1",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Unpriced Calls",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Total observed attempts in the selected range.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": null,
+      "noValue": "No calls in this time range. Widen the range or see the a wider time range or the Model filter.",
+      "options": {
+        "colorMode": "value_and_background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "SELECT COUNT(*) AS calls FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryText": "SELECT COUNT(*) AS calls FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryType": "table",
+          "rawQueryText": "SELECT COUNT(*) AS calls FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Calls",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Hourly/range-adaptive spend buckets over the selected range; cost is grouped by bucket.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "id": null,
+      "noValue": "No calls in this time range. Widen the range or see the a wider time range or the Model filter.",
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "query": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,SUM(cost_usd) AS spend FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY 1",
+          "queryText": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,SUM(cost_usd) AS spend FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY 1",
+          "queryType": "table",
+          "rawQueryText": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,SUM(cost_usd) AS spend FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY 1",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Spend Over Time",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Spend grouped by provider for the selected range.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "id": null,
+      "noValue": "No priced calls in this time range.",
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none"
+      },
+      "targets": [
+        {
+          "query": "SELECT provider,SUM(cost_usd) AS cost FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY provider ORDER BY cost DESC",
+          "queryText": "SELECT provider,SUM(cost_usd) AS cost FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY provider ORDER BY cost DESC",
+          "queryType": "table",
+          "rawQueryText": "SELECT provider,SUM(cost_usd) AS cost FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY provider ORDER BY cost DESC",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Cost by Provider",
+      "transparent": false,
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Top 20 provider/model combinations by priced spend; model labels disambiguate providers.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "id": null,
+      "noValue": "No priced calls in this time range.",
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "query": "SELECT provider||'/'||model AS model,COUNT(*) AS calls,SUM(cost_input_usd) AS input_cost,SUM(cost_cache_read_usd) AS cache_cost,SUM(cost_output_usd) AS output_cost,SUM(cost_usd) AS total_cost FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY total_cost DESC LIMIT 20",
+          "queryText": "SELECT provider||'/'||model AS model,COUNT(*) AS calls,SUM(cost_input_usd) AS input_cost,SUM(cost_cache_read_usd) AS cache_cost,SUM(cost_output_usd) AS output_cost,SUM(cost_usd) AS total_cost FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY total_cost DESC LIMIT 20",
+          "queryType": "table",
+          "rawQueryText": "SELECT provider||'/'||model AS model,COUNT(*) AS calls,SUM(cost_input_usd) AS input_cost,SUM(cost_cache_read_usd) AS cache_cost,SUM(cost_output_usd) AS output_cost,SUM(cost_usd) AS total_cost FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY total_cost DESC LIMIT 20",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Top Models by Spend",
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Uncached input, cache-read, output and other cost buckets over the selected range.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "id": null,
+      "noValue": "No priced calls in this time range.",
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "query": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,SUM(cost_input_usd) AS input_uncached,SUM(cost_cache_read_usd) AS cache_read,SUM(cost_output_usd) AS output,SUM(cost_other_usd) AS other FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY 1",
+          "queryText": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,SUM(cost_input_usd) AS input_uncached,SUM(cost_cache_read_usd) AS cache_read,SUM(cost_output_usd) AS output,SUM(cost_other_usd) AS other FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY 1",
+          "queryType": "table",
+          "rawQueryText": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,SUM(cost_input_usd) AS input_uncached,SUM(cost_cache_read_usd) AS cache_read,SUM(cost_output_usd) AS output,SUM(cost_other_usd) AS other FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY 1",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Cost Components",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Individual priced attempts driving cost; limited to 50 rows and linked by id to the call record.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "id": null,
+      "noValue": "No priced calls in this time range.",
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "query": "SELECT id,datetime(ts,'unixepoch') AS time_utc,provider||'/'||model AS model,input_tokens,output_tokens,ROUND(cost_usd,6) AS cost_usd,trace_id FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND cost_usd IS NOT NULL ORDER BY cost_usd DESC LIMIT 50",
+          "queryText": "SELECT id,datetime(ts,'unixepoch') AS time_utc,provider||'/'||model AS model,input_tokens,output_tokens,ROUND(cost_usd,6) AS cost_usd,trace_id FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND cost_usd IS NOT NULL ORDER BY cost_usd DESC LIMIT 50",
+          "queryType": "table",
+          "rawQueryText": "SELECT id,datetime(ts,'unixepoch') AS time_utc,provider||'/'||model AS model,input_tokens,output_tokens,ROUND(cost_usd,6) AS cost_usd,trace_id FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND cost_usd IS NOT NULL ORDER BY cost_usd DESC LIMIT 50",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Most Expensive Calls",
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Spend grouped by optional X-Llmtap-Project metadata; empty project means the client did not send it.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 29
+      },
+      "id": null,
+      "noValue": "No project metadata or priced calls in this time range.",
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "query": "SELECT COALESCE(project,'(none)') AS project,COUNT(*) AS calls,SUM(cost_usd) AS cost_usd FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY cost_usd DESC",
+          "queryText": "SELECT COALESCE(project,'(none)') AS project,COUNT(*) AS calls,SUM(cost_usd) AS cost_usd FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY cost_usd DESC",
+          "queryType": "table",
+          "rawQueryText": "SELECT COALESCE(project,'(none)') AS project,COUNT(*) AS calls,SUM(cost_usd) AS cost_usd FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY cost_usd DESC",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Cost by Project",
+      "transparent": false,
+      "type": "table"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 41,
+  "tags": [
+    "ai-observable"
+  ],
+  "templating": {
+    "list": [
+      {
+        "datasource": {
+          "type": "frser-sqlite-datasource",
+          "uid": "llmtap-sqlite"
+        },
+        "definition": "SELECT DISTINCT model FROM calls_v ORDER BY model",
+        "includeAll": true,
+        "label": "Model",
+        "multi": true,
+        "name": "model",
+        "query": "SELECT DISTINCT model FROM calls_v ORDER BY model",
+        "refresh": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "quick_ranges": [
+      {
+        "display": "1h",
+        "from": "now-1h",
+        "to": "now"
+      },
+      {
+        "display": "6h",
+        "from": "now-6h",
+        "to": "now"
+      },
+      {
+        "display": "24h",
+        "from": "now-24h",
+        "to": "now"
+      },
+      {
+        "display": "7d",
+        "from": "now-7d",
+        "to": "now"
+      },
+      {
+        "display": "30d",
+        "from": "now-30d",
+        "to": "now"
+      }
+    ],
+    "refresh_intervals": [
+      "10s"
+    ]
+  },
+  "title": "LLM Cost \u0026 Spending",
+  "uid": "llmtap-cost"
+}
