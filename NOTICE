@@ -1,0 +1,10 @@
+AI-Observable
+Copyright 2026 AI-Observable contributors
+Licensed under the Apache License, Version 2.0.
+
+Third-party software run separately (not included in release artifacts):
+- Grafana OSS, AGPL-3.0, https://grafana.com
+- frser-sqlite-datasource, Apache-2.0, https://github.com/fr-ser/grafana-sqlite-datasource
+
+Pricing data is a hand-maintained, small model-price snapshot in this source
+tree; it is not copied from LiteLLM.

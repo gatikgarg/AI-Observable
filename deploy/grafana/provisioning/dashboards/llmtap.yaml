@@ -1,0 +1,6 @@
+apiVersion: 1
+providers:
+  - name: AI-Observable
+    folder: AI-Observable
+    type: file
+    options: {path: /var/lib/grafana/dashboards}

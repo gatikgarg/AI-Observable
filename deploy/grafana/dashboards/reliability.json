@@ -1,0 +1,650 @@
+{
+  "editable": false,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "title": "Cost",
+      "url": "/d/llmtap-cost"
+    },
+    {
+      "title": "Latency",
+      "url": "/d/llmtap-latency"
+    },
+    {
+      "title": "Efficiency",
+      "url": "/d/llmtap-efficiency"
+    }
+  ],
+  "panels": [
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Failed attempts excluding client cancellations, divided by non-cancelled attempts.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": null,
+      "noValue": "No calls in this time range. Widen the range or see the a wider time range or the Model filter.",
+      "options": {
+        "colorMode": "value_and_background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "SELECT 100.0*SUM(is_failure)/MAX(SUM(1-is_cancelled),1) AS failure_pct FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryText": "SELECT 100.0*SUM(is_failure)/MAX(SUM(1-is_cancelled),1) AS failure_pct FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryType": "table",
+          "rawQueryText": "SELECT 100.0*SUM(is_failure)/MAX(SUM(1-is_cancelled),1) AS failure_pct FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Failure Rate",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Successful attempts divided by non-cancelled attempts; cancellations are not provider failures.",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 95
+              },
+              {
+                "color": "green",
+                "value": 99
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": null,
+      "noValue": "No calls in this time range.",
+      "options": {
+        "colorMode": "value_and_background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "SELECT 100.0*SUM(success)/MAX(SUM(1-is_cancelled),1) AS success_pct FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryText": "SELECT 100.0*SUM(success)/MAX(SUM(1-is_cancelled),1) AS success_pct FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryType": "table",
+          "rawQueryText": "SELECT 100.0*SUM(success)/MAX(SUM(1-is_cancelled),1) AS success_pct FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Success Rate",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Failure count excluding client cancellations; one row is one observed HTTP attempt.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": null,
+      "noValue": "No failures in this time range.",
+      "options": {
+        "colorMode": "value_and_background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "SELECT COALESCE(SUM(is_failure),0) AS failures FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryText": "SELECT COALESCE(SUM(is_failure),0) AS failures FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryType": "table",
+          "rawQueryText": "SELECT COALESCE(SUM(is_failure),0) AS failures FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Failed Attempts",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "HTTP 429 rate among observed attempts in the selected range.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": null,
+      "noValue": "No rate-limit responses in this time range.",
+      "options": {
+        "colorMode": "value_and_background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "query": "SELECT 100.0*SUM(CASE WHEN error_category='http_429' THEN 1 ELSE 0 END)/MAX(COUNT(*),1) AS rate_pct FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryText": "SELECT 100.0*SUM(CASE WHEN error_category='http_429' THEN 1 ELSE 0 END)/MAX(COUNT(*),1) AS rate_pct FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "queryType": "table",
+          "rawQueryText": "SELECT 100.0*SUM(CASE WHEN error_category='http_429' THEN 1 ELSE 0 END)/MAX(COUNT(*),1) AS rate_pct FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "429 Rate",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Failed attempts per adaptive time bucket; cancellations are excluded from failure series.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
+      "id": null,
+      "noValue": "No calls in this time range.",
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "query": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,SUM(is_failure) AS failures,SUM(CASE WHEN error_category='http_429' THEN 1 ELSE 0 END) AS rate_limits FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY 1",
+          "queryText": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,SUM(is_failure) AS failures,SUM(CASE WHEN error_category='http_429' THEN 1 ELSE 0 END) AS rate_limits FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY 1",
+          "queryType": "table",
+          "rawQueryText": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,SUM(is_failure) AS failures,SUM(CASE WHEN error_category='http_429' THEN 1 ELSE 0 END) AS rate_limits FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1 ORDER BY 1",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Failures Over Time",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Failure taxonomy: timeout, connection_error, invalid_response, HTTP classes and other; cancellations are shown separately.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
+      "id": null,
+      "noValue": "No errors in this time range.",
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none"
+      },
+      "targets": [
+        {
+          "query": "SELECT error_category,COUNT(*) AS attempts FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND is_cancelled=0 AND is_failure=1 GROUP BY error_category ORDER BY attempts DESC",
+          "queryText": "SELECT error_category,COUNT(*) AS attempts FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND is_cancelled=0 AND is_failure=1 GROUP BY error_category ORDER BY attempts DESC",
+          "queryType": "table",
+          "rawQueryText": "SELECT error_category,COUNT(*) AS attempts FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND is_cancelled=0 AND is_failure=1 GROUP BY error_category ORDER BY attempts DESC",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Errors by Category",
+      "transparent": false,
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Latest failed attempts; id can link to the call record.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "id": null,
+      "noValue": "No failures in this time range.",
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "query": "SELECT id,datetime(ts,'unixepoch') AS time_utc,provider,model,status,error_category,error_type,error_message,trace_id FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND is_failure=1 ORDER BY ts DESC LIMIT 50",
+          "queryText": "SELECT id,datetime(ts,'unixepoch') AS time_utc,provider,model,status,error_category,error_type,error_message,trace_id FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND is_failure=1 ORDER BY ts DESC LIMIT 50",
+          "queryType": "table",
+          "rawQueryText": "SELECT id,datetime(ts,'unixepoch') AS time_utc,provider,model,status,error_category,error_type,error_message,trace_id FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND is_failure=1 ORDER BY ts DESC LIMIT 50",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Recent Failures",
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Failure percentage by adaptive bucket and provider; cancellations excluded.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "id": null,
+      "noValue": "No calls in this time range.",
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "query": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,provider,100.0*SUM(is_failure)/MAX(SUM(1-is_cancelled),1) AS failure_pct FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1,provider ORDER BY 1",
+          "queryText": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,provider,100.0*SUM(is_failure)/MAX(SUM(1-is_cancelled),1) AS failure_pct FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1,provider ORDER BY 1",
+          "queryType": "table",
+          "rawQueryText": "SELECT CAST(ts/MAX(10,(($__to-$__from)/1000)/120) AS INTEGER)*MAX(10,(($__to-$__from)/1000)/120) AS time,provider,100.0*SUM(is_failure)/MAX(SUM(1-is_cancelled),1) AS failure_pct FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 GROUP BY 1,provider ORDER BY 1",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Reliability by Provider",
+      "transparent": false,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Attempts grouped by trace_id. Empty when clients do not send X-Llmtap-Trace/traceparent; logical requests cannot otherwise be inferred.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 21
+      },
+      "id": null,
+      "noValue": "No trace/retry metadata was reported by clients.",
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "query": "SELECT trace_id,COUNT(*) AS attempts,MAX(attempt) AS max_attempts,SUM(is_failure) AS failures FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND trace_id IS NOT NULL GROUP BY trace_id HAVING COUNT(*)\u003e1 ORDER BY attempts DESC LIMIT 50",
+          "queryText": "SELECT trace_id,COUNT(*) AS attempts,MAX(attempt) AS max_attempts,SUM(is_failure) AS failures FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND trace_id IS NOT NULL GROUP BY trace_id HAVING COUNT(*)\u003e1 ORDER BY attempts DESC LIMIT 50",
+          "queryType": "table",
+          "rawQueryText": "SELECT trace_id,COUNT(*) AS attempts,MAX(attempt) AS max_attempts,SUM(is_failure) AS failures FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND trace_id IS NOT NULL GROUP BY trace_id HAVING COUNT(*)\u003e1 ORDER BY attempts DESC LIMIT 50",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Retry Chains",
+      "transparent": false,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "llmtap-sqlite"
+      },
+      "description": "Providers with concentrated failures in the selected range; no external incident feed is used.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 14,
+            "lineWidth": 2,
+            "spanNulls": false
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 21
+      },
+      "id": null,
+      "noValue": "No provider failures in this time range.",
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "query": "SELECT provider,error_category,COUNT(*) AS failures,MAX(datetime(ts,'unixepoch')) AS last_seen FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND is_failure=1 GROUP BY provider,error_category ORDER BY failures DESC LIMIT 50",
+          "queryText": "SELECT provider,error_category,COUNT(*) AS failures,MAX(datetime(ts,'unixepoch')) AS last_seen FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND is_failure=1 GROUP BY provider,error_category ORDER BY failures DESC LIMIT 50",
+          "queryType": "table",
+          "rawQueryText": "SELECT provider,error_category,COUNT(*) AS failures,MAX(datetime(ts,'unixepoch')) AS last_seen FROM calls_v WHERE ('${model:raw}'='__all' OR model IN (${model:singlequote})) AND ts BETWEEN $__from/1000 AND $__to/1000 AND is_failure=1 GROUP BY provider,error_category ORDER BY failures DESC LIMIT 50",
+          "refId": "A",
+          "timeColumns": [
+            "time",
+            "ts"
+          ]
+        }
+      ],
+      "title": "Provider Incidents",
+      "transparent": false,
+      "type": "table"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 41,
+  "tags": [
+    "ai-observable"
+  ],
+  "templating": {
+    "list": [
+      {
+        "datasource": {
+          "type": "frser-sqlite-datasource",
+          "uid": "llmtap-sqlite"
+        },
+        "definition": "SELECT DISTINCT model FROM calls_v ORDER BY model",
+        "includeAll": true,
+        "label": "Model",
+        "multi": true,
+        "name": "model",
+        "query": "SELECT DISTINCT model FROM calls_v ORDER BY model",
+        "refresh": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "quick_ranges": [
+      {
+        "display": "1h",
+        "from": "now-1h",
+        "to": "now"
+      },
+      {
+        "display": "6h",
+        "from": "now-6h",
+        "to": "now"
+      },
+      {
+        "display": "24h",
+        "from": "now-24h",
+        "to": "now"
+      },
+      {
+        "display": "7d",
+        "from": "now-7d",
+        "to": "now"
+      },
+      {
+        "display": "30d",
+        "from": "now-30d",
+        "to": "now"
+      }
+    ]
+  },
+  "title": "LLM Reliability \u0026 Errors",
+  "uid": "llmtap-reliability"
+}

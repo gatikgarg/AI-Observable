@@ -1,0 +1,16 @@
+/llmtap
+/llmtap.exe
+*.db-wal
+*.db-shm
+coverage.out
+.env
+.tools/
+.cache/
+.local/
+backups/
+*.backup
+.docker-config/
+.demo-test/
+.smoke/
+go.zip
+go-installer.msi

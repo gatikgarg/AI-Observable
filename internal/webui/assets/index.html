@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>AI-Observable API Manager</title>
+<link rel="icon" type="image/svg+xml" href="/assets/logo.svg?v={{.SVGHash}}">
+<link rel="stylesheet" href="/assets/app.css?v={{.CSSHash}}">
+</head>
+<body data-csrf="{{.CSRF}}" data-version="{{.Version}}" data-grafana="{{.Grafana}}">
+<div class="orb" aria-hidden="true"><span></span><span></span><span></span></div>
+<div class="app">
+  <aside class="rail">
+    <div class="brand">
+      <img class="brand-logo" src="/assets/main_logo.svg?v={{.SVGHash}}" alt="AI-Observable binoculars logo">
+      <div><b>AI-Observable</b><span>API Manager</span></div>
+    </div>
+    <nav id="nav">
+      <button data-view="providers" class="on"><i>1</i>Providers</button>
+      <button data-view="keys"><i>2</i>Keys</button>
+      <button data-view="collection"><i>3</i>Collection</button>
+      <button data-view="integrations"><i>4</i>Integrations</button>
+      <button data-view="metrics"><i>5</i>Metrics</button>
+      <button data-view="settings"><i>6</i>Settings</button>
+    </nav>
+    <div class="rail-logo">
+      <img src="/assets/logo.svg?v={{.SVGHash}}" alt="AI-Observable binoculars logo">
+    </div>
+    <a class="dash" id="dashLink" href="{{.Grafana}}/d/llmtap-cost" target="_blank" rel="noreferrer">Open dashboards &#8599;</a>
+  </aside>
+  <main>
+    <header class="top">
+      <div>
+        <h1 id="title">Providers</h1>
+        <p id="subtitle">Connect the APIs you already pay for.</p>
+      </div>
+      <div class="actions">
+        <button id="refresh" class="ghost">Refresh</button>
+        <button id="add" class="primary">+ Add API</button>
+      </div>
+    </header>
+    <div id="banner" class="banner" hidden></div>
+    <section id="view" aria-live="polite"><div class="empty">Loading&hellip;</div></section>
+  </main>
+</div>
+
+<dialog id="wizard" class="wizard">
+  <form method="dialog" id="wizardForm">
+    <header><h2 id="wizTitle">Connect an API</h2><button value="cancel" class="x" aria-label="Close">&times;</button></header>
+    <div class="wizBody" id="wizBody"></div>
+    <footer>
+      <button value="cancel" class="ghost">Cancel</button>
+      <button type="button" id="wizSave" class="primary">Save</button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog id="agentDialog" class="wizard">
+  <form method="dialog">
+    <header><h2 id="agentTitle">Connect a coding agent</h2><button value="cancel" class="x" aria-label="Close">&times;</button></header>
+    <div class="wizBody" id="agentBody"></div>
+    <footer>
+      <button value="cancel" class="ghost">Close</button>
+      <button type="button" id="agentCreate" class="primary">Create integration</button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog id="dialog" class="wizard small">
+  <form method="dialog">
+    <header><h2 id="dlgTitle">Confirm</h2><button value="cancel" class="x" aria-label="Close">&times;</button></header>
+    <div class="wizBody" id="dlgBody"></div>
+    <footer><button value="cancel" class="ghost">Cancel</button><button value="ok" class="primary" id="dlgOk">Confirm</button></footer>
+  </form>
+</dialog>
+
+<script src="/assets/app.js?v={{.JSHash}}" defer></script>
+</body>
+</html>
