@@ -230,6 +230,45 @@ const WIRES_BY_KIND = {
   "openai-compatible": ["chat"],
 };
 
+function instructionSection(title, body) {
+  return `<div class="instruction-section"><h5>${title}</h5>${body}</div>`;
+}
+
+function instructionField(label, value, action = "") {
+  return `<li><span>${esc(label)}</span><div class="instruction-field-value">
+    <code class="mono">${esc(value)}</code>${action}</div></li>`;
+}
+
+function instructionFields(rows) {
+  return `<ul class="instruction-fields">${rows
+    .map(([label, value, action]) => instructionField(label, value, action))
+    .join("")}</ul>`;
+}
+
+function integrationShortID(id) {
+  return String(id || "").replace(/-/g, "").slice(0, 8);
+}
+
+function safeLabel(label) {
+  return String(label || "codex").toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "") || "agent";
+}
+
+function codexProviderID(integration) {
+  const short = integrationShortID(integration?.id) || "<integration-id>";
+  return `observable_${safeLabel(integration?.label)}_${short}`;
+}
+
+function codexEnvName(integration) {
+  const short = integrationShortID(integration?.id) || "<integration-id>";
+  return `OBSERVABLE_KEY_CODEX_${short.toUpperCase()}`;
+}
+
+function vendorLink(label, url) {
+  return url ? `<a class="instruction-link" href="${esc(url)}" target="_blank" rel="noreferrer">${esc(label)}</a>` : "";
+}
+
 function instructionSelection() {
   const selected = state.integrations.find((i) => i.id === state.instructions.integrationID && !i.revoked_at_ms);
   if (selected) {
@@ -281,24 +320,53 @@ function renderInstructions() {
   const copy = (value, label = "Copy") => value
     ? `<button class="ghost" type="button" data-act="copy" data-copy="${esc(value)}">${esc(label)}</button>`
     : "";
+  const missingTokenNote = "Create a new integration or rotate this integration's token if it was lost.";
   let steps = "";
   if (agent === "codex") {
-    steps = `<ol class="instruction-steps">
-      <li><b>Create or select the Codex integration.</b> Codex requires a Responses-capable provider.</li>
-      <li><b>Apply the managed Codex configuration</b> from the integration dialog.</li>
-      <li><b>Restart Codex.</b> Close all Codex terminal sessions and fully quit every VS Code window.</li>
-      <li><b>Send a test request</b> after restarting. The integration becomes verified only when real inference traffic appears in Observable.</li>
-    </ol>`;
+    const codexFields = instructionFields([
+      ["Config file", "~/.codex/config.toml (Windows: %USERPROFILE%\\.codex\\config.toml)"],
+      ["Default provider", codexProviderID(integration)],
+      ["Wire API", "responses"],
+      ["Base URL", gateway, copy(gateway)],
+      ["Model", model, integration ? copy(model) : ""],
+      ["Token environment variable", codexEnvName(integration)],
+    ]);
+    steps = instructionSection("What Observable writes for you", codexFields) +
+      instructionSection("Steps for Codex", `<ol class="instruction-steps">
+      <li>Make sure the Codex CLI or Codex IDE extension is installed and signed in.</li>
+      <li>Choose a Responses-capable provider above, then create the Codex integration.</li>
+      <li>In the integration dialog, click <b>Apply and wait for traffic</b>. Observable backs up the current file, writes the values above to your user-level <code>config.toml</code>, and sets the token environment variable.</li>
+      <li>Close every running Codex CLI session. Fully quit all VS Code windows, then reopen VS Code so the extension host reloads the user environment.</li>
+      <li>Start a new Codex chat and send a simple prompt. On Windows, if Codex still cannot authenticate, confirm the environment variable from the table above exists under your Windows user environment.</li>
+      <li>After the request reaches Observable, open this integration and run <b>Verify</b>. The state changes to <b>Verified (traffic seen)</b> only after that first real inference request.</li>
+    </ol>`);
   } else {
     const agentName = AGENT_LABELS[agent] || agent;
-    steps = `<ol class="instruction-steps">
-      <li><b>Open ${esc(agentName)} settings</b> and choose an OpenAI-compatible provider.</li>
-      <li><b>Set Base URL</b> to the gateway URL below. ${copy(gateway)}</li>
-      <li><b>Set API Key</b> to the gateway token. ${token ? copy(token, "Copy token") : "Create a new integration or rotate this integration's token if it was lost."}</li>
-      <li><b>Set Model ID</b> to <code>${esc(model)}</code>. ${integration ? copy(model) : ""}</li>
-      <li><b>Save and verify.</b> Reload the VS Code window if the provider list does not refresh.</li>
-      <li><b>Send a test prompt.</b> The integration is verified only after a real inference request reaches Observable.</li>
-    </ol>`;
+    if (agent === "cline") {
+      steps = instructionSection("Steps for Cline", `<ol class="instruction-steps">
+      <li>Open Cline in VS Code and click the gear icon to open <b>Settings</b>.</li>
+      <li>Set <b>API Provider</b> to <b>OpenAI Compatible</b>.</li>
+      <li>Set <b>Base URL</b> to the gateway URL below. ${copy(gateway)}</li>
+      <li>Set <b>API Key</b> to the gateway token. ${token ? copy(token, "Copy token") : missingTokenNote}</li>
+      <li>Set <b>Model</b> to <code>${esc(model)}</code>. ${integration ? copy(model) : ""}</li>
+      <li>Leave <b>Use Azure Identity Authentication</b> unchecked. Expand <b>Model Configuration</b> only if this model needs custom context or output limits.</li>
+      <li>Save or verify the provider. If the provider list does not refresh, reload the VS Code window.</li>
+      <li>Send a test prompt. The integration becomes <b>Verified (traffic seen)</b> only after that request reaches Observable.</li>
+    </ol>${vendorLink("Cline: OpenAI Compatible guide", "https://docs.cline.bot/provider-config/openai-compatible")}`);
+    } else {
+      steps = instructionSection("Steps for Kilo Code", `<ol class="instruction-steps">
+      <li>Open Kilo Code in VS Code, click the gear icon, and go to <b>Settings &rarr; Providers</b>.</li>
+      <li>Scroll to the bottom of the provider list and click <b>Custom provider</b>.</li>
+      <li>Set <b>Provider ID</b> to <code>observable</code>.</li>
+      <li>Set <b>Display name</b> to <code>AI-Observable</code>.</li>
+      <li>Set <b>Provider API</b> to <b>OpenAI Compatible</b>.</li>
+      <li>Set <b>Base URL</b> to the gateway URL below. ${copy(gateway)}</li>
+      <li>Set <b>API key</b> to the gateway token. ${token ? copy(token, "Copy token") : missingTokenNote}</li>
+      <li>Add the model in <b>Models</b> with ID <code>${esc(model)}</code> and the same display name, or click <b>Fetch models</b> when the endpoint exposes a models list.</li>
+      <li>Click <b>Submit</b>. Then select <b>AI-Observable</b> in the model picker and choose <code>${esc(model)}</code>.</li>
+      <li>Send a test prompt. The integration becomes <b>Verified (traffic seen)</b> only after that request reaches Observable.</li>
+    </ol>${vendorLink("Kilo Code: custom provider guide", "https://kilo.ai/docs/code-with-ai/agents/custom-models")}`);
+    }
   }
   return `<section class="card instructions" id="instructions">
     <header><div><h3>Instructions</h3><div class="meta">Choose the agent and provider you are connecting.</div></div>
@@ -314,7 +382,9 @@ function renderInstructions() {
     <div class="result instruction-token"><b>Gateway token</b><code class="mono">${esc(tokenValue)}</code>${token ? copy(token, "Copy token") : ""}
       <div class="muted">The plaintext token is shown only once. Observable stores its hash, not the token.</div></div>
     ${steps}
-    <p class="muted">Observable must remain running whenever the coding agent is used.</p>
+    <p class="muted">Observable must remain running whenever the coding agent is used. ${agent === "codex"
+      ? vendorLink("Codex config reference", "https://developers.openai.com/codex/config-reference")
+      : ""}</p>
   </section>`;
 }
 
